@@ -6,7 +6,7 @@ class Program
     {
         if (args.Length != 2 || !args[0].StartsWith("-d"))
         {
-            Console.WriteLine("Usage: -d<#> <input string>");
+            Console.WriteLine("Usage: -d<#> <input file path>");
             return;
         }
 
@@ -16,8 +16,15 @@ class Program
             return;
         }
 
-        string inputString = args[1];
-        Console.WriteLine($"Number: {number}, Input String: {inputString}");
+        string filePath = args[1];
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine("File not found.");
+            return;
+        }
+
+        string inputString = File.ReadAllText(filePath);
+        Console.WriteLine($"Number: {number}, Input File: {filePath}");
 
         var result = DaySelector.SelectDay(number).Run(inputString);
         Console.WriteLine($"Result for Day{number}: {result}");

@@ -1,4 +1,7 @@
-﻿namespace AdventOfCode2024.Utilities
+﻿using AdventOfCode2024.Days;
+using AdventOfCode2024.Days.Day1;
+
+namespace AdventOfCode2024.Utilities
 {
     internal static class DaySelector
     {
@@ -6,8 +9,8 @@
         {
             return dayNumber switch
             {
-                /*1 => new Day1(),
-                2 => new Day2(),
+                1 => new Day1(),
+                /*2 => new Day2(),
                 3 => new Day3(),
                 4 => new Day4(),
                 5 => new Day5(),
