@@ -5,7 +5,7 @@ namespace AdventOfCode2024.Utilities
 {
     internal static class DaySelector
     {
-        public static IDay SelectDay(int dayNumber)
+        public static Day SelectDay(int dayNumber)
         {
             return dayNumber switch
             {
