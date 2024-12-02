@@ -13,12 +13,14 @@ namespace AdventOfCode2024.Days.Day2
 
         public override string Part2(string input)
         {
-            throw new NotImplementedException();
+            Day2Data data = ParseInput(input, allowRemoval: true);
+
+            return data.GetSareReportsCount().ToString();
         }
 
-        private Day2Data ParseInput(string input)
+        private Day2Data ParseInput(string input, bool allowRemoval = false)
         {
-            return new Day2Data(input);
+            return new Day2Data(input, allowRemoval);
         }
     }
 }

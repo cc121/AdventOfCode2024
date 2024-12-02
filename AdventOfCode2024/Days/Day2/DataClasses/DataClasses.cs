@@ -4,12 +4,12 @@
     {
         private readonly List<Day2Reports> _reports = [];
 
-        public Day2Data(string input)
+        public Day2Data(string input, bool allowRemoval)
         {
             var rows = input.Split("\n");
             foreach (var row in rows)
             {
-                _reports.Add(new Day2Reports(row));
+                _reports.Add(new Day2Reports(row, allowRemoval));
             }
         }
 
@@ -23,11 +23,11 @@
     {
         private readonly List<int> _report;
 
-        public Day2Reports(string row)
+        public Day2Reports(string row, bool allowRemoval)
         {
             _report = row.Split(" ").Select(int.Parse).ToList();
 
-            _safe = DetermineSafety();
+            _safe = DetermineSafety(allowRemoval);
         }
 
         #region Safe Methods
@@ -37,18 +37,38 @@
 
         private readonly int[] _safeRange = [1, 3];
 
-        private bool DetermineSafety()
+        private bool DetermineSafety(bool allowRemoval = false)
+        {
+            var safe = CalculateSafe(_report);
+            if (!safe && allowRemoval)
+            {
+                for (int i = 0; i < _report.Count; i++)
+                {
+                    var report = new List<int>(_report);
+                    report.RemoveAt(i);
+                    safe = CalculateSafe(report);
+                    if (safe)
+                    {
+                        break;
+                    }
+                }
+
+            }
+            return safe;
+        }
+
+        private bool CalculateSafe(List<int> report)
         {
             var wasSafe = true;
 
             int index = 1;
-            int previous = _report[0];
+            int previous = report[0];
             int next;
             bool? isIncreasing = null;
 
-            while (index < _report.Count)
+            while (index < report.Count)
             {
-                next = _report[index];
+                next = report[index];
 
                 var delta = Math.Abs(next - previous);
                 if (delta < _safeRange[0] || delta > _safeRange[1])
