@@ -1,5 +1,6 @@
 ﻿using AdventOfCode2024.Days;
 using AdventOfCode2024.Days.Day1;
+using AdventOfCode2024.Days.Day2;
 
 namespace AdventOfCode2024.Utilities
 {
@@ -10,8 +11,8 @@ namespace AdventOfCode2024.Utilities
             return dayNumber switch
             {
                 1 => new Day1(),
-                /*2 => new Day2(),
-                3 => new Day3(),
+                2 => new Day2(),
+                /*3 => new Day3(),
                 4 => new Day4(),
                 5 => new Day5(),
                 6 => new Day6(),
