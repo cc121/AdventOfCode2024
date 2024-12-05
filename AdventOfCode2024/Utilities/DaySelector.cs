@@ -2,6 +2,7 @@
 using AdventOfCode2024.Days.Day1;
 using AdventOfCode2024.Days.Day2;
 using AdventOfCode2024.Days.Day3;
+using AdventOfCode2024.Days.Day4;
 
 namespace AdventOfCode2024.Utilities
 {
@@ -14,8 +15,8 @@ namespace AdventOfCode2024.Utilities
                 1 => new Day1(),
                 2 => new Day2(),
                 3 => new Day3(),
-                /*4 => new Day4(),
-                5 => new Day5(),
+                4 => new Day4(),
+                /*5 => new Day5(),
                 6 => new Day6(),
                 7 => new Day7(),
                 8 => new Day8(),
