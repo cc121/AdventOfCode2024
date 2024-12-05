@@ -27,5 +27,22 @@
             }
             return count;
         }
+
+        public int GetXCount()
+        {
+            var count = 0;
+            foreach (var letter in _letters)
+            {
+                if (letter.Letter == "A")
+                {
+                    var isX = letter.IsX;
+                    if (isX)
+                    {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
     }
 }

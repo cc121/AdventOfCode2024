@@ -82,5 +82,55 @@
         {
             return Math.Abs(X - other.X) <= 1 && Math.Abs(Y - other.Y) <= 1;
         }
+
+        public bool IsX
+        {
+            get
+            {
+                if (_letter != "A")
+                {
+                    return false;
+                }
+                else
+                {
+                    return CheckForX();
+                }
+            }
+        }
+
+        private bool CheckForX()
+        {
+            int[] topLeft = [-1, -1], topRight = [-1, 1], bottomLeft = [1, -1], bottomRight = [1, 1];
+            int[][] top = [topLeft, topRight], bottom = [bottomLeft, bottomRight], left = [topLeft, bottomLeft], right = [topRight, bottomRight];
+            int[][][][] pairs = [[top, bottom], [left, right]];
+
+            foreach (var pair in pairs)
+            {
+                if ((MatchingPair(pair[0], "M") && MatchingPair(pair[1], "S")) || (MatchingPair(pair[0], "S") && MatchingPair(pair[1], "M")))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool MatchingPair(int[][] direction, string letter)
+        {
+            return CheckDirection(direction[0], letter) && CheckDirection(direction[1], letter);
+        }
+
+        private bool CheckDirection(int[] direction, string letter)
+        {
+            int x = X + direction[0], y = Y + direction[1];
+            foreach (var neighbor in _neighbors)
+            {
+                if (neighbor.X == x && neighbor.Y == y && neighbor.Letter == letter)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
