@@ -13,7 +13,9 @@ namespace AdventOfCode2024.Days.Day5
 
         public override string Part2(string input)
         {
-            throw new NotImplementedException();
+            var printQueue = ParseInput(input);
+
+            return printQueue.CalculateCorrectedOrderScore().ToString();
         }
 
         private static PrintQueue ParseInput(string input)

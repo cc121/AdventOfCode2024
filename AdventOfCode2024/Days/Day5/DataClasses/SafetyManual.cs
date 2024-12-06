@@ -2,11 +2,22 @@
 {
     internal class SafetyManual
     {
-        private readonly Dictionary<string, PageNumber> _pageNumbers = new();
+        private readonly Dictionary<string, PageNumber> _pageNumbers = [];
+        private List<string> _pageOrdering;
+
+        public List<string> PageOrdering => _pageOrdering;
 
         public SafetyManual(string manual)
         {
             var pages = manual.Split(",").ToList();
+            _pageOrdering = new List<string>(pages);
+
+            SetPageNumbers(pages);
+        }
+
+        private void SetPageNumbers(List<string> pages)
+        {
+            _pageNumbers.Clear();
             pages.Reverse();
 
             int middleIndex = pages.Count / 2;
@@ -37,6 +48,24 @@
             }
             else
                 return true;
+        }
+
+        public void CorrectWithRules(List<List<string>> orderedRules)
+        {
+            var newPageOrdering = new List<string>();
+            foreach (var group in orderedRules)
+            {
+                foreach (var item in group)
+                {
+                    if (_pageOrdering.Contains(item))
+                    {
+                        newPageOrdering.Add(item);
+                    }
+                }
+            }
+
+            _pageOrdering = newPageOrdering;
+            SetPageNumbers(newPageOrdering);
         }
     }
 }
