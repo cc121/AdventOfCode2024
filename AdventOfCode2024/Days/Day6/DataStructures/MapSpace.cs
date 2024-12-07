@@ -46,34 +46,33 @@
             _neighbors[direction] = neighbor;
         }
 
-        private readonly Dictionary<Direction, Obstacle?> _obstacleCache = [];
-        public Obstacle? GetObstacleInDirection(Direction direction)
+        public (Obstacle? Obstacle, bool WasStopped) GetObstacleInDirection(Direction direction, int? stopX = null, int? stopY = null)
         {
-            // Check the cache first
-            if (_obstacleCache.ContainsKey(direction))
+            if (stopX != null && stopY == null || stopX == null && stopY != null)
             {
-                return _obstacleCache[direction];
+                throw new Exception("stopX and stopY must both be null or both be set");
             }
 
             // Check for map edge
             if (!_neighbors.ContainsKey(direction))
             {
-                _obstacleCache[direction] = null;
-                return null;
+                return (null, false);
             }
 
             // Handle the different neighbor types
             var neighbor = _neighbors[direction];
-            if (neighbor is Obstacle obstacleNeighbor)
+            if (neighbor.X == stopX && neighbor.Y == stopY)
             {
-                _obstacleCache[direction] = obstacleNeighbor;
-                return obstacleNeighbor;
+                return (null, true);
+            }
+            else if (neighbor is Obstacle obstacleNeighbor)
+            {
+                return (obstacleNeighbor, false);
             }
             else if (neighbor is EmptySpace emptyNeighbor)
             {
-                var obstacle = emptyNeighbor.GetObstacleInDirection(direction);
-                _obstacleCache[direction] = obstacle;
-                return obstacle;
+                var result = emptyNeighbor.GetObstacleInDirection(direction, stopX, stopY);
+                return result;
             }
             else
                 throw new Exception("invalid state - neighbor is not an obstacle or empty space");

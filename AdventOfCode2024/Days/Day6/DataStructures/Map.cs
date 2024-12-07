@@ -170,72 +170,71 @@
 
         private bool DetectLoop()
         {
-            // 
             var currentDirection = _guard.CurrentDirection;
-            var rotatedDirection = currentDirection switch
+            int currentX = _guard.X, currentY = _guard.Y;
+            while (true)
             {
-                Direction.North => Direction.East,
-                Direction.East => Direction.South,
-                Direction.South => Direction.West,
-                Direction.West => Direction.North,
-                _ => throw new Exception("Invalid direction")
-            };
-
-            var currentSpace = _map[_guard.Y][_guard.X];
-            if (currentSpace is EmptySpace emptySpace)
-            {
-                DrawGraph();
-                Obstacle? obstacle = emptySpace.GetObstacleInDirection(rotatedDirection);
-                var result = obstacle?.HasGuardVisited(rotatedDirection) ?? false;
-                return result;
-            }
-            else
-                throw new Exception("Invalid state - guard current position not an empty space");
-        }
-
-        private void DrawGraph()
-        {
-            string filePath = "map_output.txt";
-            using (StreamWriter writer = new StreamWriter(filePath))
-            {
-                for (int y = 0; y < _maxY; y++)
+                // Rotate
+                currentDirection = currentDirection switch
                 {
-                    for (int x = 0; x < _maxX; x++)
+                    Direction.North => Direction.East,
+                    Direction.East => Direction.South,
+                    Direction.South => Direction.West,
+                    Direction.West => Direction.North,
+                    _ => throw new Exception("Invalid direction")
+                };
+                rotationCount++;
+
+                // Get the space
+                var currentSpace = _map[currentY][currentX];
+                if (currentSpace is EmptySpace emptySpace)
+                {
+                    var result = emptySpace.GetObstacleInDirection(currentDirection, _guard.X, _guard.Y);
+
+                    if (result.Obstacle != null)
                     {
-                        if (x == _guard.X && y == _guard.Y)
+                        if (result.Obstacle.HasGuardVisited(currentDirection))
+                            return true;
+
+                        // Set the current X and Y to position of the neighbor before the obstacle
+                        currentX = result.Obstacle.X;
+                        currentY = result.Obstacle.Y;
+
+                        switch (currentDirection)
                         {
-                            char guardChar = _guard.CurrentDirection switch
-                            {
-                                Direction.North => '^',
-                                Direction.East => '>',
-                                Direction.South => 'v',
-                                Direction.West => '<',
-                                _ => throw new Exception("Invalid direction")
-                            };
-                            writer.Write(guardChar);
+                            case Direction.North:
+                                currentY += 1;
+                                break;
+                            case Direction.East:
+                                currentX -= 1;
+                                break;
+                            case Direction.South:
+                                currentY -= 1;
+                                break;
+                            case Direction.West:
+                                currentX += 1;
+                                break;
+                        }
+
+                        // Continue to rotation and continue searching for loops
+                        continue;
+                    }
+                    else
+                    {
+                        if (!result.WasStopped)
+                        {
+                            // Went off the edge of the map, no loop
+                            return false;
                         }
                         else
                         {
-                            var space = _map[y][x];
-                            if (space is EmptySpace emptySpace)
-                            {
-                                if (emptySpace.IsVisited)
-                                {
-                                    writer.Write("X");
-                                }
-                                else
-                                {
-                                    writer.Write(".");
-                                }
-                            }
-                            else if (space is Obstacle)
-                            {
-                                writer.Write("#");
-                            }
+                            // We overlapped our original point - loop!
+                            return true;
                         }
                     }
-                    writer.WriteLine();
                 }
+                else
+                    throw new Exception("Invalid state - guard current position not an empty space");
             }
         }
     }
