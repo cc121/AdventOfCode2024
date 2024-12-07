@@ -20,38 +20,72 @@
                 {
                     if (character == '#')
                     {
-                        mapRow.Add(new Obstacle(x, y));
-                    }
-                    else if (character == '.')
-                    {
-                        mapRow.Add(new EmptySpace(x, y));
+                        var newObstacle = new Obstacle(x, y);
+                        mapRow.Add(newObstacle);
+                        if (x > 0)
+                        {
+                            var leftNeighbor = mapRow[x - 1];
+                            if (leftNeighbor is EmptySpace leftEmptySpace)
+                            {
+                                leftEmptySpace.AddNeighbor(Direction.East, mapRow[x]);
+                            }
+                        }
+                        if (y > 0)
+                        {
+                            var topNeighbor = _map[y - 1][x];
+                            if (topNeighbor is EmptySpace topEmptySpace)
+                            {
+                                topEmptySpace.AddNeighbor(Direction.South, mapRow[x]);
+                            }
+                        }
                     }
                     else
                     {
-                        Direction direction;
-                        switch (character)
+                        // Either empty space or guard (who starts on an empty space)
+                        var newEmptySpace = new EmptySpace(x, y);
+                        mapRow.Add(newEmptySpace);
+                        if (x > 0)
                         {
-                            case '^':
-                                direction = Direction.North;
-                                break;
-                            case '>':
-                                direction = Direction.East;
-                                break;
-                            case 'v':
-                                direction = Direction.South;
-                                break;
-                            case '<':
-                                direction = Direction.West;
-                                break;
-                            default:
-                                throw new Exception("Invalid character in map string");
+                            var leftNeighbor = mapRow[x - 1];
+                            newEmptySpace.AddNeighbor(Direction.West, leftNeighbor);
+                            if (leftNeighbor is EmptySpace leftEmptySpace)
+                            {
+                                leftEmptySpace.AddNeighbor(Direction.East, mapRow[x]);
+                            }
                         }
-                        guard = new Guard(x, y, direction);
+                        if (y > 0)
+                        {
+                            var topNeighbor = _map[y - 1][x];
+                            newEmptySpace.AddNeighbor(Direction.North, topNeighbor);
+                            if (topNeighbor is EmptySpace topEmptySpace)
+                            {
+                                topEmptySpace.AddNeighbor(Direction.South, mapRow[x]);
+                            }
+                        }
 
-                        var guardSpace = new EmptySpace(x, y);
-                        guardSpace.IsVisited = true;
-
-                        mapRow.Add(guardSpace);
+                        if (character != '.')
+                        {
+                            Direction direction;
+                            switch (character)
+                            {
+                                case '^':
+                                    direction = Direction.North;
+                                    break;
+                                case '>':
+                                    direction = Direction.East;
+                                    break;
+                                case 'v':
+                                    direction = Direction.South;
+                                    break;
+                                case '<':
+                                    direction = Direction.West;
+                                    break;
+                                default:
+                                    throw new Exception("Invalid character in map string");
+                            }
+                            guard = new Guard(x, y, direction);
+                            newEmptySpace.IsVisited = true;
+                        }
                     }
                     x++;
                 }
@@ -90,12 +124,20 @@
             return uniqueVisits;
         }
 
-        private bool _simulationRan = false;
-        private void RunSimulation()
+        public int GetLoops()
         {
+            return RunSimulation();
+        }
+
+        private bool _simulationRan = false;
+
+        private int RunSimulation()
+        {
+            int loops = 0;
+
             if (_simulationRan)
             {
-                return;
+                return -1;
             }
 
             while (true)
@@ -106,12 +148,95 @@
                     break;
                 }
                 var newSpace = _map[newY][newX];
+
+                // Check for possible loops
+                if (newSpace is EmptySpace)
+                {
+                    if (DetectLoop())
+                    {
+                        loops++;
+                    }
+                }
+
                 if (!_guard.MoveTo(newSpace))
                 {
                     _guard.RotateCW();
                 }
             }
             _simulationRan = true;
+
+            return loops;
+        }
+
+        private bool DetectLoop()
+        {
+            // 
+            var currentDirection = _guard.CurrentDirection;
+            var rotatedDirection = currentDirection switch
+            {
+                Direction.North => Direction.East,
+                Direction.East => Direction.South,
+                Direction.South => Direction.West,
+                Direction.West => Direction.North,
+                _ => throw new Exception("Invalid direction")
+            };
+
+            var currentSpace = _map[_guard.Y][_guard.X];
+            if (currentSpace is EmptySpace emptySpace)
+            {
+                DrawGraph();
+                Obstacle? obstacle = emptySpace.GetObstacleInDirection(rotatedDirection);
+                var result = obstacle?.HasGuardVisited(rotatedDirection) ?? false;
+                return result;
+            }
+            else
+                throw new Exception("Invalid state - guard current position not an empty space");
+        }
+
+        private void DrawGraph()
+        {
+            string filePath = "map_output.txt";
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                for (int y = 0; y < _maxY; y++)
+                {
+                    for (int x = 0; x < _maxX; x++)
+                    {
+                        if (x == _guard.X && y == _guard.Y)
+                        {
+                            char guardChar = _guard.CurrentDirection switch
+                            {
+                                Direction.North => '^',
+                                Direction.East => '>',
+                                Direction.South => 'v',
+                                Direction.West => '<',
+                                _ => throw new Exception("Invalid direction")
+                            };
+                            writer.Write(guardChar);
+                        }
+                        else
+                        {
+                            var space = _map[y][x];
+                            if (space is EmptySpace emptySpace)
+                            {
+                                if (emptySpace.IsVisited)
+                                {
+                                    writer.Write("X");
+                                }
+                                else
+                                {
+                                    writer.Write(".");
+                                }
+                            }
+                            else if (space is Obstacle)
+                            {
+                                writer.Write("#");
+                            }
+                        }
+                    }
+                    writer.WriteLine();
+                }
+            }
         }
     }
 }

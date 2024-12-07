@@ -17,6 +17,18 @@
     internal class Obstacle : MapSpace
     {
         public Obstacle(int x, int y) : base(x, y) { }
+
+        private readonly HashSet<Direction> _guardVisitHistory = new HashSet<Direction>();
+
+        public void AddGuardVisit(Direction direction)
+        {
+            _guardVisitHistory.Add(direction);
+        }
+
+        public bool HasGuardVisited(Direction direction)
+        {
+            return _guardVisitHistory.Contains(direction);
+        }
     }
 
     internal class EmptySpace : MapSpace
@@ -26,6 +38,45 @@
         public EmptySpace(int x, int y) : base(x, y)
         {
             IsVisited = false;
+        }
+
+        private readonly Dictionary<Direction, MapSpace> _neighbors = [];
+        public void AddNeighbor(Direction direction, MapSpace neighbor)
+        {
+            _neighbors[direction] = neighbor;
+        }
+
+        private readonly Dictionary<Direction, Obstacle?> _obstacleCache = [];
+        public Obstacle? GetObstacleInDirection(Direction direction)
+        {
+            // Check the cache first
+            if (_obstacleCache.ContainsKey(direction))
+            {
+                return _obstacleCache[direction];
+            }
+
+            // Check for map edge
+            if (!_neighbors.ContainsKey(direction))
+            {
+                _obstacleCache[direction] = null;
+                return null;
+            }
+
+            // Handle the different neighbor types
+            var neighbor = _neighbors[direction];
+            if (neighbor is Obstacle obstacleNeighbor)
+            {
+                _obstacleCache[direction] = obstacleNeighbor;
+                return obstacleNeighbor;
+            }
+            else if (neighbor is EmptySpace emptyNeighbor)
+            {
+                var obstacle = emptyNeighbor.GetObstacleInDirection(direction);
+                _obstacleCache[direction] = obstacle;
+                return obstacle;
+            }
+            else
+                throw new Exception("invalid state - neighbor is not an obstacle or empty space");
         }
     }
 
@@ -75,8 +126,9 @@
 
         public bool MoveTo(MapSpace targetSpace)
         {
-            if (targetSpace is Obstacle)
+            if (targetSpace is Obstacle obstacle)
             {
+                obstacle.AddGuardVisit(CurrentDirection);
                 return false; // Can't move to an obstacle
             }
 

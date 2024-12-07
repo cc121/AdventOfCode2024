@@ -13,7 +13,9 @@ namespace AdventOfCode2024.Days.Day6
 
         public override string Part2(string input)
         {
-            throw new NotImplementedException();
+            var map = new Map(input);
+
+            return map.GetLoops().ToString();
         }
     }
 }
