@@ -170,6 +170,8 @@
 
         private bool DetectLoop()
         {
+            List<string> visited = new List<string>();
+
             var currentDirection = _guard.CurrentDirection;
             int currentX = _guard.X, currentY = _guard.Y;
             while (true)
@@ -183,7 +185,13 @@
                     Direction.West => Direction.North,
                     _ => throw new Exception("Invalid direction")
                 };
-                rotationCount++;
+
+                var key = $"{currentX},{currentY},{currentDirection}";
+                if (visited.Contains(key))
+                {
+                    return true;
+                }
+                visited.Add(key);
 
                 // Get the space
                 var currentSpace = _map[currentY][currentX];
